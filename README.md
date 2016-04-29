@@ -1,6 +1,6 @@
-# ssh-agent
-
-ssh-agent in a container.
+# docker-ssh-agent
+ 
+Docker SSH Agent
 
 ## How to use
 
