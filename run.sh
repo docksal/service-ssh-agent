@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Print a debug message if debug mode is on ($DEBUG is not empty)
 # @param message
@@ -50,9 +50,9 @@ case "$1" in
 		# When $key_path is empty, ssh-agent will be looking for both id_rsa and id_dsa in the home directory.
 	 	# We do a sed hack here to strip out '/root/.ssh' from the key path in the output from ssh-add, since this path may confuse people.
 		# echo "Press ENTER or CTRL+C to skip entering passphrase (if any)."
-		# We store and return exit code from the first command (there is no $PIPESTATUS in sh...)
-		exec $_command 2>&1 || ret=$? | sed 's/\/root\/.ssh\///g'
-		return $ret
+		$_command 2>&1 0>&1 | sed 's/\/root\/.ssh\///g'
+		# Retune first command exit code
+		exit ${PIPESTATUS[0]}
 		;;
 	*)
 		exec $@

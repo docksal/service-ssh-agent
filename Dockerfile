@@ -3,6 +3,7 @@ FROM alpine:3.4
 MAINTAINER Leonid Makarov <leonid.makarov@blinkreaction.com>
 
 RUN apk add --no-cache \
+	bash \
 	openssh \
 	socat \
 	&& rm -rf /var/cache/apk/*
