@@ -1,19 +1,17 @@
-# docker-ssh-agent
- 
-Docker SSH Agent
+# Docker SSH Agent for Docksal
 
 ## How to use
 
 ### 0. Build 
 
 ```
-docker build -t blinkreaction/docker-ssh-agent:stable -f Dockerfile .
+docker build -t docksal/ssh-agent:stable -f Dockerfile .
 ```
 
 ### 1. Run a long-lived container 
 
 ```
-docker run -d --name=ssh-agent blinkreaction/docker-ssh-agent:stable
+docker run -d --name=ssh-agent docksal/ssh-agent:stable
 ```
 
 ### 2. Add your ssh keys
@@ -21,7 +19,7 @@ docker run -d --name=ssh-agent blinkreaction/docker-ssh-agent:stable
 Run a temporary container with volume mounted from host that includes your SSH keys. SSH key id_rsa will be added to ssh-agent (you can replace id_rsa with your key name):
 
 ```
-docker run --rm --volumes-from=ssh-agent -v ~/.ssh:/root/.ssh -it blinkreaction/docker-ssh-agent:stable ssh-add /root/.ssh/id_rsa
+docker run --rm --volumes-from=ssh-agent -v ~/.ssh:/root/.ssh -it docksal/ssh-agent:stable ssh-add /root/.ssh/id_rsa
 ```
 
 ### 3. Delete all ssh keys from ssh-agent
@@ -29,7 +27,7 @@ docker run --rm --volumes-from=ssh-agent -v ~/.ssh:/root/.ssh -it blinkreaction/
 Run a temporary container and delete all known keys from ssh-agent:
 
 ```
-docker run --rm --volumes-from=ssh-agent -it blinkreaction/docker-ssh-agent:stable ssh-add -D
+docker run --rm --volumes-from=ssh-agent -it docksal/ssh-agent:stable ssh-add -D
 ```
 
 ### 4. Add ssh-agent socket to other container:
