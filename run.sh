@@ -27,15 +27,15 @@ case "$1" in
 		# .ssh folder from host is expected to be mounted on /.ssh
 		# We copy keys from there into /root/.ssh and fix permissions (necessary on Windows hosts) 
 		host_ssh_path="/.ssh"
-		if [ -d $host_ssh_path ]; then
-			debug_msg "Copying host SSH keys and setting propper permissions..."
-			cp -a $host_ssh_path/. ~/.ssh/
-			chmod 700 ~/.ssh
-			chmod 600 ~/.ssh/*
-			chmod 644 ~/.ssh/*.pub
+		if [ -d "$host_ssh_path" ]; then
+			debug_msg "Copying host SSH keys and setting proper permissions..."
+			cp -r $host_ssh_path $HOME/.ssh
+			chmod 700 $HOME/.ssh
+			chmod 600 $HOME/.ssh/* >/dev/null 2>&1 || true
+			chmod 644 $HOME/.ssh/*.pub >/dev/null 2>&1 || true
 		fi
-		
-		# Make sure the key existis if provided.
+
+		# Make sure the key exists if provided.
 		# Otherwise we may be getting an argumet, which we'll handle late.
 		# When $ssh_key_path is empty, ssh-agent will be looking for both id_rsa and id_dsa in the home directory.
 		ssh_key_path=""
