@@ -1,57 +1,52 @@
-# Docker SSH Agent for Docksal
+# SSH Agent Docker image for Docksal
 
-## How to use
+This image(s) is part of the [Docksal](http://docksal.io) image library.
 
-### 0. Build 
+The exposed ssh-agent socket will be accessible to all users (not only root) in any container.  
+This is achieved by exposing a proxy socket (`/.ssh-agent/proxy-socket`) via socat.
+
+
+## Usage
+
+### 1. Start the ssh-agent container 
 
 ```
-docker build -t docksal/ssh-agent:stable -f Dockerfile .
-```
-
-### 1. Run a long-lived container 
-
-```
-docker run -d --name=ssh-agent docksal/ssh-agent:stable
+docker run -d --name=ssh-agent docksal/ssh-agent
 ```
 
 ### 2. Add your ssh keys
 
-Run a temporary container with volume mounted from host that includes your SSH keys. SSH key id_rsa will be added to ssh-agent (you can replace id_rsa with your key name):
+Replace `~/.ssh` with the path to your keys and `id_rsa` with the key name.  
+If the key has a passphrase, you will be asked to enter it.
 
 ```
-docker run --rm --volumes-from=ssh-agent -v ~/.ssh:/root/.ssh -it docksal/ssh-agent:stable ssh-add /root/.ssh/id_rsa
+docker run --rm --volumes-from=ssh-agent -v ~/.ssh:/root/.ssh -it ssh-agent ssh-add /root/.ssh/id_rsa
 ```
 
-### 3. Delete all ssh keys from ssh-agent
+### 3. Access SSH keys from the ssh-agent in other containers
 
-Run a temporary container and delete all known keys from ssh-agent:
+Mount the ssh-agent socket and set the `SSH_AUTH_SOCK` variable in other containers.
 
-```
-docker run --rm --volumes-from=ssh-agent -it docksal/ssh-agent:stable ssh-add -D
-```
-
-### 4. Add ssh-agent socket to other container:
-
-Use two options for running your container:
+Docker
 
 ```
+docker run --rm --volumes-from=ssh-agent -e SSH_AUTH_SOCK=/.ssh-agent/proxy-socket-it <image> ssh-add -l
+```
+
+Docker Compose
+
+```
+  ...
   volumes_from:
     - ssh-agent
+  ...
   environment:
-    - SSH_AUTH_SOCK=/.ssh-agent/socket
+    - SSH_AUTH_SOCK /.ssh-agent/proxy-socket
+  ...
 ```
 
-It works only for root user. ssh-agent socket is accessible only to the user which started this agent or for root user. So other users don't have access to /.ssh-agent/socket. If you have another user (for example docker) in your container, do next things:
-- install 'socat' utility in your container
-- make proxy-socket in your conatainer:
+### Deleting all keys from the ssh-agent
+
 ```
-sudo socat UNIX-LISTEN:~/.ssh/socket,fork UNIX-CONNECT:/.ssh-agent/socket &
-```
-- change owner for this proxy-socket
-```
-sudo chown $(id -u) ~/.ssh/socket
-```
-- you need use different SSH_AUTH_SOCK for this user:
-```
-SSH_AUTH_SOCK=~/.ssh/socket
+docker run --rm --volumes-from=ssh-agent -it docksal/ssh-agent ssh-add -D
 ```
