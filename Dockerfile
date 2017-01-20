@@ -1,7 +1,5 @@
 FROM alpine:3.4
 
-MAINTAINER Team Docksal, https://docksal.io
-
 RUN apk add --no-cache \
 	bash \
 	openssh \
