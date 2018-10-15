@@ -28,7 +28,6 @@ teardown() {
 	ssh_key_file="${HOME}/.ssh/${ssh_key_name}"
 	rm -f ${ssh_key_file}
 	ssh-keygen -t rsa -b 4096 -f ${ssh_key_file} -q -N ""
-	ssh_key_fingerprint=$(ssh-keygen -lf ${ssh_key_file} | awk '{print $2}')
 
 	# Add the key to the agent
 	run fin ssh-add ${ssh_key_name}
@@ -38,7 +37,7 @@ teardown() {
 
 	# Check they key is present in the agent
 	run fin ssh-add -l
-	[[ ${output} == *${ssh_key_fingerprint}* ]]
+	[[ ${output} == *${ssh_key_name}* ]]
 	unset output
 
 	# Cleanup
