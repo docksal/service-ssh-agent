@@ -30,13 +30,13 @@ teardown() {
 	ssh-keygen -t rsa -b 4096 -f ${ssh_key_file} -q -N ""
 
 	# Add the key to the agent
-	run fin ssh-add ${ssh_key_name}
+	run fin ssh-key add ${ssh_key_name}
 	# Cleanup garbage \r from the output otherwise there won't be an exact match
 	[[ "$(echo ${output} | tr -d '\r')" == "Identity added: ${ssh_key_name} (${ssh_key_name})" ]]
 	unset output
 
 	# Check they key is present in the agent
-	run fin ssh-add -l
+	run fin ssh-key add -l
 	[[ ${output} == *${ssh_key_name}* ]]
 	unset output
 
