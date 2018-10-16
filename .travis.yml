@@ -1,0 +1,28 @@
+sudo: required
+
+language: generic
+
+env:
+  REPO: docksal/ssh-agent
+  IMAGE_DNS: ${REPO}:dev
+  DOCKSAL_VERSION: develop
+
+services:
+  - docker
+
+install:
+  # Install Docksal to have a matching versions of Docker on the build host
+  - curl -fsSL https://get.docksal.io | DOCKSAL_VERSION=${DOCKSAL_VERSION} bash
+  - fin version
+  - fin sysinfo
+
+script:
+  - make
+  - make start
+  - make test
+
+after_success:
+  - make release
+
+after_failure:
+  - make logs
