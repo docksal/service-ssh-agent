@@ -36,7 +36,7 @@ teardown() {
 	unset output
 
 	# Check they key is present in the agent
-	run fin ssh-key add -l
+	run fin ssh-key ls
 	[[ ${output} == *${ssh_key_name}* ]]
 	unset output
 
