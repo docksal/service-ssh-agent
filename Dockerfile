@@ -6,14 +6,15 @@ RUN apk add --no-cache \
 	socat \
 	&& rm -rf /var/cache/apk/*
 
-COPY run.sh /run.sh
+COPY bin /usr/local/bin
 
+ENV SSH_DIR /.ssh
 ENV SOCKET_DIR /.ssh-agent
 ENV SSH_AUTH_SOCK ${SOCKET_DIR}/socket
 ENV SSH_AUTH_PROXY_SOCK ${SOCKET_DIR}/proxy-socket
 
 VOLUME ${SOCKET_DIR}
 
-ENTRYPOINT ["/run.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 CMD ["ssh-agent"]

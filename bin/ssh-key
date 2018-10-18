@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+
+DEBUG=${DEBUG:-0}
+# Print a debug message if debug mode is on
+# @param message
+echo_debug ()
+{
+	[[ "${DEBUG}" != 0 ]] && echo "$(date +"%F %H:%M:%S") | $@"
+}
+
+# Helper function to check whether an key is already loaded in the ssh-agent
+# This is useful for keys with a passphrase, which otherwise would require the user to re-enter it.
+# @param $1 ssh key name
+ssh_key_loaded ()
+{
+	# Get fingerprints for keys already loaded in the agent
+	# This function may be called multiple times, so we should cache this value
+	if [[ "$existing_fingerprints" == "" ]]; then
+		existing_fingerprints=$(ssh-add -l)
+		export existing_fingerprints
+	fi
+
+	new_fingerprint=$(ssh-keygen -lf ${SSH_DIR}/${1} | awk '{print $2}')
+
+	[[ ${existing_fingerprints} == *${new_fingerprint}* ]]
+}
+
+ssh_key_add ()
+{
+	# Fix permissions on keys before trying to add them to the agent
+	chmod 700 ${SSH_DIR}
+	chmod 600 ${SSH_DIR}/* >/dev/null 2>&1 || true
+	chmod 644 ${SSH_DIR}/*.pub >/dev/null 2>&1 || true
+
+	# Make sure the key exists if provided.
+	# Otherwise we may be getting an argumet, which we'll handle late.
+	# When $ssh_key_path is empty, ssh-agent will be looking for both id_rsa and id_dsa in the home directory.
+	if [[ "${1}" != "" ]] && [[ -f "${SSH_DIR}/${1}" ]]; then
+		ssh_key_name="${1}"
+		ssh_key_path="${SSH_DIR}/${ssh_key_name}"
+
+		# Check whether the key is already loaded in the agent and skip adding if so.
+		if ssh_key_loaded ${ssh_key_name}; then
+			echo "Key '${ssh_key_name}' already loaded in the agent. Skipping."
+			return 0
+		fi
+	fi
+
+	# Calling ssh-add. This should handle all arguments cases.
+	_command="ssh-add ${ssh_key_path}"
+	echo_debug "Executing: ${_command}"
+	# We do a sed hack here to strip out the key path in the output from ssh-add, since it may confuse people.
+	${_command} 2>&1 0>&1 | sed "s|${SSH_DIR}/||g"
+	ret=${PIPESTATUS[0]}
+
+	# Remove the key immediately
+	rm -f /.ssh/${ssh_key_name}
+
+	# Return the exit code from ssh-add above
+	return ${ret}
+}
+
+ssh_key_remove ()
+{
+	ssh-add -D
+}
+
+ssh_key_list ()
+{
+	# We do a sed hack here to strip out the key path in the output from ssh-add, since it may confuse people.
+	ssh-add -l 2>&1 0>&1 | sed "s|${SSH_DIR}/||g"
+	# Return the exit code of th first command in the pipe list
+	return ${PIPESTATUS[0]}
+}
+
+ssh_key_new ()
+{
+	echo "$@"
+}
+
+#-------------------------- RUNTIME STARTS HERE ----------------------------
+
+# Parse other parameters
+case "$1" in
+	add)
+		shift
+		ssh_key_add "$@"
+		;;
+	rm)
+		shift
+		ssh_key_remove "$@"
+		;;
+	ls)
+		shift
+		ssh_key_list "$@"
+		;;
+	new)
+		shift
+		ssh_key_list "$@"
+		;;
+	debug)
+		shift
+		eval "$@"
+		;;
+	*)
+		echo "Usage: $0 add|rm|ls|new"
+esac
