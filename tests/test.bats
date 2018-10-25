@@ -86,7 +86,6 @@ _healthcheck_wait ()
 
 	# Check they key is present in the agent
 	run fin ssh-key ls
-	#echo "$output" | grep "$ssh_key_name"
 	[[ ${output} == *${ssh_key_name}* ]]
 	unset output
 
