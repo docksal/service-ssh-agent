@@ -47,8 +47,8 @@ _healthcheck_wait ()
     elapsed=$((elapsed + delay))
     if ((elapsed > timeout)); then
         echo-error "$container_name heathcheck failed" \
-	"Container did not enter a healthy state within the expected amount of time." \
-	"Try ${yellow}fin restart${NC}"
+    "Container did not enter a healthy state within the expected amount of time." \
+    "Try ${yellow}fin restart${NC}"
         exit 1
     fi
     done
@@ -59,12 +59,13 @@ _healthcheck_wait ()
 # To work on a specific test:
 # run `export SKIP=1` locally, then comment skip in the test you want to debug
 
-@test "ssh-agent container is up and using the \"${IMAGE}\" image" {
+@test "${NAME} container is up and using the \"${IMAGE}\" image" {
 	[[ ${SKIP} == 1 ]] && skip
+
 	_healthcheck_wait
 
-	run docker ps --filter "name=docksal-ssh-agent" --format "{{ .Image }}"
-	[[ "$output" =~ "$IMAGE" ]]
+	run docker ps --filter "name=${NAME}" --format "{{ .Image }}"
+	[[ "$output" =~ "${IMAGE}" ]]
 	unset output
 }
 
