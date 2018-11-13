@@ -47,8 +47,8 @@ _healthcheck_wait ()
 	elapsed=$((elapsed + delay))
 	if ((elapsed > timeout)); then
 		echo-error "$container_name heathcheck failed" \
-	"Container did not enter a healthy state within the expected amount of time." \
-	"Try ${yellow}fin restart${NC}"
+			"Container did not enter a healthy state within the expected amount of time." \
+			"Try ${yellow}fin restart${NC}"
 		exit 1
 	fi
 	done
@@ -61,7 +61,6 @@ _healthcheck_wait ()
 
 @test "${NAME} container is up and using the \"${IMAGE}\" image" {
 	[[ ${SKIP} == 1 ]] && skip
-
 	_healthcheck_wait
 
 	run docker ps --filter "name=${NAME}" --format "{{ .Image }}"
@@ -71,7 +70,6 @@ _healthcheck_wait ()
 
 @test "fin ssh-key add" {
 	[[ ${SKIP} == 1 ]] && skip
-	_healthcheck_wait
 
 	# Generate a key
 	ssh_key_name="ssh_agent_test_id_rsa"
