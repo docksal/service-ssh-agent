@@ -27,23 +27,22 @@ ssh_key_loaded ()
 
 ssh_key_add ()
 {
+	ssh_key_name="${1}"
+	ssh_key_path="${SSH_DIR}/${ssh_key_name}"
+
+	# Make sure the key file was provided and exists
+	[[ "${ssh_key_name}" == "" ]] && echo 'Missing SSH key file name' >&2 && return 1
+	[[ ! -f "${ssh_key_path}" ]] && echo "SSH key file does not exist in '${ssh_key_path}'" >&2 && return 1
+
 	# Fix permissions on keys before trying to add them to the agent
 	chmod 700 ${SSH_DIR}
 	chmod 600 ${SSH_DIR}/* >/dev/null 2>&1 || true
 	chmod 644 ${SSH_DIR}/*.pub >/dev/null 2>&1 || true
 
-	# Make sure the key exists if provided.
-	# Otherwise we may be getting an argumet, which we'll handle late.
-	# When $ssh_key_path is empty, ssh-agent will be looking for both id_rsa and id_dsa in the home directory.
-	if [[ "${1}" != "" ]] && [[ -f "${SSH_DIR}/${1}" ]]; then
-		ssh_key_name="${1}"
-		ssh_key_path="${SSH_DIR}/${ssh_key_name}"
-
-		# Check whether the key is already loaded in the agent and skip adding if so.
-		if ssh_key_loaded ${ssh_key_name}; then
-			echo "Key '${ssh_key_name}' already loaded in the agent. Skipping."
-			return 0
-		fi
+	# Check whether the key is already loaded in the agent and skip adding if so.
+	if ssh_key_loaded ${ssh_key_name}; then
+		echo "Key '${ssh_key_name}' already loaded in the agent. Skipping."
+		return 0
 	fi
 
 	# Calling ssh-add. This should handle all arguments cases.
@@ -54,7 +53,7 @@ ssh_key_add ()
 	ret=${PIPESTATUS[0]}
 
 	# Remove the key immediately
-	rm -f /.ssh/${ssh_key_name}
+	rm -f ${ssh_key_path}
 
 	# Return the exit code from ssh-add above
 	return ${ret}
@@ -94,14 +93,10 @@ case "$1" in
 		shift
 		ssh_key_list "$@"
 		;;
-	new)
-		shift
-		ssh_key_list "$@"
-		;;
 	debug)
 		shift
 		eval "$@"
 		;;
 	*)
-		echo "Usage: $0 add|rm|ls|new"
+		echo "Usage: ssh-key add|rm|ls"
 esac
