@@ -29,8 +29,6 @@ _healthcheck ()
 }
 
 # Waits for containers to become healthy
-# For reasoning why we are not using  `depends_on` `condition` see here:
-# https://github.com/docksal/docksal/issues/225#issuecomment-306604063
 _healthcheck_wait ()
 {
 	# Wait for cli to become ready by watching its health status
@@ -40,17 +38,15 @@ _healthcheck_wait ()
 	local elapsed=0
 
 	until _healthcheck "$container_name"; do
-	echo "Waiting for $container_name to become ready..."
-	sleep "$delay";
+		echo "Waiting for $container_name to become ready..."
+		sleep "$delay";
 
-	# Give the container 30s to become ready
-	elapsed=$((elapsed + delay))
-	if ((elapsed > timeout)); then
-		echo-error "$container_name heathcheck failed" \
-			"Container did not enter a healthy state within the expected amount of time." \
-			"Try ${yellow}fin restart${NC}"
-		exit 1
-	fi
+		# Give the container 30s to become ready
+		elapsed=$((elapsed + delay))
+		if ((elapsed > timeout)); then
+			echo "$container_name heathcheck failed"
+			exit 1
+		fi
 	done
 
 	return 0
