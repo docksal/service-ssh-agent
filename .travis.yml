@@ -1,12 +1,9 @@
-sudo: required
+dist: xenial
 
-language: generic
+language: minimal
 
 env:
   DOCKSAL_VERSION: develop
-
-services:
-  - docker
 
 install:
   # Install Docksal to have a matching versions of Docker on the build host
