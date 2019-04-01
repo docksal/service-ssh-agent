@@ -79,8 +79,9 @@ _healthcheck_wait ()
 
 	# Add the key to the agent
 	run fin ssh-key add ${ssh_key_name}
-	# Cleanup garbage \r from the output otherwise there won't be an exact match
-	[[ "$(echo ${output} | tr -d '\r')" == "Identity added: ${ssh_key_name} (${ssh_key_name})" ]]
+	# fin will warn about "Running in a non-interactive environment. SSH keys with passphrases cannot be used.",
+	# so not using an exact match here.
+	[[ "$(echo ${output})" =~ "Identity added: ${ssh_key_name} (${ssh_key_name})" ]]
 	unset output
 
 	# Check they key is present in the agent
