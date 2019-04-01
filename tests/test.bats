@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # Debugging
-teardown() {
+teardown () {
 	echo
 	echo "Output:"
 	echo "================================================================"
@@ -14,14 +14,14 @@ teardown() {
 _healthcheck ()
 {
 	local health_status
-	health_status=$(docker inspect --format='{{json .State.Health.Status}}' "$1" 2>/dev/null)
+	health_status=$(${DOCKER} inspect --format='{{json .State.Health.Status}}' "$1" 2>/dev/null)
 
 	# Wait for 5s then exit with 0 if a container does not have a health status property
 	# Necessary for backward compatibility with images that do not support health checks
 	if [[ $? != 0 ]]; then
-	echo "Waiting 10s for container to start..."
-	sleep 10
-	return 0
+		echo "Waiting 10s for container to start..."
+		sleep 10
+		return 0
 	fi
 
 	# If it does, check the status
@@ -32,8 +32,8 @@ _healthcheck ()
 _healthcheck_wait ()
 {
 	# Wait for cli to become ready by watching its health status
-	local container_name="${NAME}"
-	local delay=5
+	local container_name="${1}"
+	local delay=1
 	local timeout=30
 	local elapsed=0
 
@@ -58,10 +58,12 @@ _healthcheck_wait ()
 @test "${NAME} container is up and using the \"${IMAGE}\" image" {
 	[[ ${SKIP} == 1 ]] && skip
 
-	run _healthcheck_wait
+	run _healthcheck_wait ${NAME}
 	unset output
 
-	run docker ps --filter "name=${NAME}" --format "{{ .Image }}"
+	# Using "bash -c" here to expand ${DOCKER} (in case it's more that a single word).
+	# Without bats run returns "command not found"
+	run bash -c "${DOCKER} ps --filter 'name=${NAME}' --format '{{ .Image }}'"
 	[[ "$output" =~ "${IMAGE}" ]]
 	unset output
 }
