@@ -57,7 +57,9 @@ _healthcheck_wait ()
 
 @test "${NAME} container is up and using the \"${IMAGE}\" image" {
 	[[ ${SKIP} == 1 ]] && skip
-	_healthcheck_wait
+
+	run _healthcheck_wait
+	unset output
 
 	run docker ps --filter "name=${NAME}" --format "{{ .Image }}"
 	[[ "$output" =~ "${IMAGE}" ]]
