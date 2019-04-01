@@ -75,7 +75,7 @@ _healthcheck_wait ()
 	ssh_key_name="ssh_agent_test_id_rsa"
 	ssh_key_file="${HOME}/.ssh/${ssh_key_name}"
 	rm -f ${ssh_key_file}
-	ssh-keygen -t rsa -b 4096 -f ${ssh_key_file} -q -N ""
+	ssh-keygen -t rsa -b 4096 -f ${ssh_key_file} -q -N "" -C ""
 
 	# Add the key to the agent
 	run fin ssh-key add ${ssh_key_name}
