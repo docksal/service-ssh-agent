@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
+set -eo pipefail
 
-netstat -nlp | grep -E "LISTENING.*${SSH_AUTH_PROXY_SOCK}" >/dev/null || exit 1
-netstat -nlp | grep -E "LISTENING.*${SSH_AUTH_SOCK}" >/dev/null || exit 1
-
-exit 0
+netstat -nlp | grep -qE "LISTENING.*${SSH_AUTH_PROXY_SOCK}"
+if [[ "$DOCKSAL_SSH_AGENT_USE_HOST" != "1" ]]; then
+	netstat -nlp | grep -qE "LISTENING.*${SSH_AUTH_SOCK}"
+fi
