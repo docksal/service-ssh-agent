@@ -50,3 +50,12 @@ Docker Compose
 ```bash
 docker run --rm --volumes-from=ssh-agent -it docksal/ssh-agent ssh-add -D
 ```
+
+### Running in TCP proxy mode
+
+This image supports creating a Unix socket that connects to a remote TCP socket, e.g. when connecting
+to a remote machine that exposes a Unix socket as a TCP endpoint.
+
+```bash
+docker run -d --name=ssh-agent docksal/ssh-agent ssh-proxy {host/IP} {TCP port}
+```
