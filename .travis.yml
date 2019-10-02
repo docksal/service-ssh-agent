@@ -3,7 +3,10 @@ dist: xenial
 language: minimal
 
 env:
-  DOCKSAL_VERSION: develop
+  global:
+    - DOCKSAL_VERSION=develop
+    # Explicitly disable host's SSH agent usage, as we are testing docksal-ssh-agent here
+    - DOCKSAL_SSH_AGENT_USE_HOST=0
 
 install:
   # Install Docksal to have a matching versions of Docker on the build host
