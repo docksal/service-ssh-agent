@@ -41,7 +41,7 @@ ssh_key_add ()
 
 	# Check whether the key is already loaded in the agent and skip adding if so.
 	if ssh_key_loaded ${ssh_key_name}; then
-		echo "Key '${ssh_key_name}' already loaded in the agent. Skipping."
+		[[ ${QUIET} != 1 ]] && echo "Key '${ssh_key_name}' already loaded in the agent. Skipping."
 		return 0
 	fi
 
@@ -79,7 +79,22 @@ ssh_key_new ()
 
 #-------------------------- RUNTIME STARTS HERE ----------------------------
 
-# Parse other parameters
+# Parse parameters
+args=$@
+
+QUIET=0
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--quiet)
+			QUIET=1
+			args=${args/ --quiet}
+			;;
+	esac
+	shift
+done
+set -- ${args}
+
+# Parse arguments
 case "$1" in
 	add)
 		shift
