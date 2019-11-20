@@ -2,7 +2,7 @@
 DOCKER ?= docker
 
 VERSION ?= dev
-
+TAG ?= $(VERSION)
 REPO = docksal/ssh-agent
 NAME = docksal-ssh-agent
 
