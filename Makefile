@@ -47,7 +47,7 @@ logs-follow:
 debug: build start logs-follow
 
 release:
-	@scripts/release.sh
+	@scripts/docker-push.sh
 
 clean:
 	$(DOCKER) rm -vf ${NAME} || true
