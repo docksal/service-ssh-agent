@@ -2,7 +2,7 @@
 DOCKER ?= docker
 
 VERSION ?= dev
-TAG ?= $(VERSION)
+BUILD_TAG ?= $(VERSION)
 REPO = docksal/ssh-agent
 NAME = docksal-ssh-agent
 
@@ -11,13 +11,13 @@ NAME = docksal-ssh-agent
 .PHONY: build exec test push shell run start stop logs debug clean release
 
 build:
-	$(DOCKER) build -t ${REPO}:${VERSION} .
+	$(DOCKER) build -t ${REPO}:${BUILD_TAG} .
 
 test:
-	IMAGE=${REPO}:${VERSION} bats tests/test.bats
+	IMAGE=${REPO}:${BUILD_TAG} bats tests/test.bats
 
 push:
-	$(DOCKER) push ${REPO}:${VERSION}
+	$(DOCKER) push ${REPO}:${BUILD_TAG}
 
 exec:
 	@$(DOCKER) exec ${NAME} ${CMD}
@@ -29,11 +29,11 @@ shell:
 	@make exec-it -e CMD=sh
 
 run: clean
-	$(DOCKER) run --rm -it ${REPO}:${VERSION} sh
+	$(DOCKER) run --rm -it ${REPO}:${BUILD_TAG} sh
 
 # This is the only place where fin is used/necessary
 start:
-	IMAGE_SSH_AGENT=${REPO}:${VERSION} fin system reset ssh-agent
+	IMAGE_SSH_AGENT=${REPO}:${BUILD_TAG} fin system reset ssh-agent
 
 stop:
 	$(DOCKER) stop ${NAME}

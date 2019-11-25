@@ -44,19 +44,20 @@ tag_and_push ()
 
 # ---------------------------- #
 
-# Possible docker image tags
-IMAGE_TAG_EDGE="edge${APPENDIX:+-${APPENDIX}}"
-IMAGE_TAG_STABLE="stable${APPENDIX:+-${APPENDIX}}"
-
-# Read the split parts
+# Extract version parts from release tag
 IFS='.' read -a ver_arr <<< "$TRAVIS_TAG"
+VERSION_MAJOR=${ver_arr[0]#v*}  # 2.7.0 => "2"
+VERSION_MINOR=${ver_arr[1]}  # "2.7.0" => "7"
 
-# Major version, e.g. 2[-APPENDIX]
-# APPENDIX may be php version php7.3 for example
-IMAGE_TAG_RELEASE_MAJOR="${ver_arr[0]#v*}${APPENDIX:+-${APPENDIX}}"
+# Set tags if exists
+SOFTWARE_VERSION="${SOFTWARE_VERSION:+${SOFTWARE_VERSION}-}"
 
-# Major-minor version, e.g. 2.7[-APPENDIX]
-IMAGE_TAG_RELEASE_MAJOR_MINOR="${ver_arr[0]#v*}.${ver_arr[1]}${APPENDIX:+-${APPENDIX}}"
+# Possible docker image tags
+# "image:tag" pattern: <image-repo>:<software-version>[-<image-stability-tag>][-<flavor>]
+IMAGE_TAG_EDGE="${SOFTWARE_VERSION}edge"  # e.g., [SOFTWARE_VERSION-]edge
+IMAGE_TAG_STABLE="${SOFTWARE_VERSION}stable"  # e.g., [SOFTWARE_VERSION-]stable
+IMAGE_TAG_RELEASE_MAJOR="${SOFTWARE_VERSION}${VERSION_MAJOR}"  # e.g., [SOFTWARE_VERSION-]2
+IMAGE_TAG_RELEASE_MAJOR_MINOR="${SOFTWARE_VERSION}${VERSION_MAJOR}.${VERSION_MINOR}"  # e.g., [SOFTWARE_VERSION-]2.7
 IMAGE_TAG_LATEST="latest"
 
 # Skip pull request builds
@@ -66,14 +67,14 @@ docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
 
 # Push images
 if is_edge; then
-	tag_and_push ${REPO}:${TAG} ${REPO}:${IMAGE_TAG_EDGE} # Example tag: edge[-APPENDIX]
+	tag_and_push ${REPO}:${BUILD_TAG} ${REPO}:${IMAGE_TAG_EDGE}
 elif is_stable; then
-	tag_and_push ${REPO}:${TAG} ${REPO}:${IMAGE_TAG_STABLE} # Example tag: stable[-APPENDIX]
+	tag_and_push ${REPO}:${BUILD_TAG} ${REPO}:${IMAGE_TAG_STABLE}
 elif is_release; then
 	# Have stable, major, minor tags match
-	tag_and_push ${REPO}:${TAG} ${REPO}:${IMAGE_TAG_STABLE} # Example tag: stable[-APPENDIX]
-	tag_and_push ${REPO}:${TAG} ${REPO}:${IMAGE_TAG_RELEASE_MAJOR}  # Example tag: 2[-APPENDIX]
-	tag_and_push ${REPO}:${TAG} ${REPO}:${IMAGE_TAG_RELEASE_MAJOR_MINOR}  # Example tag: 2.7[-APPENDIX]
+	tag_and_push ${REPO}:${BUILD_TAG} ${REPO}:${IMAGE_TAG_STABLE}
+	tag_and_push ${REPO}:${BUILD_TAG} ${REPO}:${IMAGE_TAG_RELEASE_MAJOR}
+	tag_and_push ${REPO}:${BUILD_TAG} ${REPO}:${IMAGE_TAG_RELEASE_MAJOR_MINOR}
 else
 	# Exit if not on develop, master or release tag
 	exit
@@ -82,5 +83,5 @@ fi
 # Special case for the "latest" tag
 # Push (base image only) on stable and release builds
 if is_latest && (is_stable || is_release); then
-	tag_and_push ${REPO}:${TAG} ${REPO}:${IMAGE_TAG_LATEST}
+	tag_and_push ${REPO}:${BUILD_TAG} ${REPO}:${IMAGE_TAG_LATEST}
 fi
