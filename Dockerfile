@@ -1,18 +1,24 @@
 FROM alpine:3.14
 
-RUN apk add --no-cache \
-	bash \
-	openssh \
-	socat \
-	&& rm -rf /var/cache/apk/*
+# amd64 / arm64
+ARG TARGETARCH
+
+RUN set -xe; \
+	apk add --update --no-cache \
+		bash \
+		openssh \
+		socat \
+	; \
+	rm -rf /var/cache/apk/*
 
 COPY bin /usr/local/bin
 COPY healthcheck.sh /opt/healthcheck.sh
 
-ENV SSH_DIR /.ssh
-ENV SOCKET_DIR /.ssh-agent
-ENV SSH_AUTH_SOCK ${SOCKET_DIR}/socket
-ENV SSH_AUTH_PROXY_SOCK ${SOCKET_DIR}/proxy-socket
+ENV \
+	SSH_DIR=/.ssh \
+	SOCKET_DIR=/.ssh-agent \
+	SSH_AUTH_SOCK=${SOCKET_DIR}/socket \
+	SSH_AUTH_PROXY_SOCK=${SOCKET_DIR}/proxy-socket
 
 VOLUME ${SOCKET_DIR}
 
