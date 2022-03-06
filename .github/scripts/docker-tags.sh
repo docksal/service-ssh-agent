@@ -21,6 +21,17 @@ join() {
 	echo "$*"
 }
 
+# Outputs the latest stable tag
+# For repos that do not set/use VERSION (e.g., system images) => "latest"
+# Fore repos that set/use VERSION (e.g., docksal/cli) => <prefix><version>-<suffix> (e.g., php8.1-ide)
+get_latest_tag() {
+	if [[ "${VERSION}" != "" ]]; then
+		echo "$(join ${VERSION_PREFIX}${VERSION} ${VERSION_SUFFIX})";
+	else
+		echo "latest"
+	fi
+}
+
 # Prints resulting image tags and sets output variable
 set_output() {
 	local -n inputArr=${1}
@@ -52,9 +63,9 @@ if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
 	imageTagArr+=("${IMAGE}:$(join ${VERSION_PREFIX}${VERSION} edge ${VERSION_SUFFIX})")
 fi
 
-# master => version
+# master => version | latest
 if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
-	imageTagArr+=("${IMAGE}:$(join ${VERSION_PREFIX}${VERSION} ${VERSION_SUFFIX})")
+	imageTagArr+=("${IMAGE}:$(get_latest_tag)")
 fi
 
 # tags/v1.0.0 => 1.0
@@ -63,7 +74,7 @@ if [[ "${GITHUB_REF}" =~ "refs/tags/" ]]; then
 	IFS='.' read -a release_arr <<< "${GITHUB_REF#refs/tags/}"
 	releaseMajor=${release_arr[0]#v*}  # 2.7.0 => "2"
 	releaseMinor=${release_arr[1]}  # "2.7.0" => "7"
-	imageTagArr+=("${IMAGE}:$(join ${VERSION_PREFIX}${VERSION} ${VERSION_SUFFIX})")
+	imageTagArr+=("${IMAGE}:$(get_latest_tag)")
 	imageTagArr+=("${IMAGE}:$(join ${VERSION_PREFIX}${VERSION} ${releaseMajor} ${VERSION_SUFFIX})")
 	imageTagArr+=("${IMAGE}:$(join ${VERSION_PREFIX}${VERSION} ${releaseMajor}.${releaseMinor} ${VERSION_SUFFIX})")
 fi
